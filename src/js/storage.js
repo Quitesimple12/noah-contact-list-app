@@ -86,7 +86,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 	};
 };
 
-export default getState;
+
 
 function getAgendaContacts() {
 	return fetch("https://playground.4geeks.com/apis/fake/contact/agenda/noahagenda", {
@@ -127,3 +127,270 @@ const [state, setState] = useState(() => getState({
 			actions: {...prevState.actions}
 		}))
 }));
+
+updateContact: (contactid, name, phone, email, address)  => {
+	const contact = {
+		"contactid": contactid,
+		"name": name,
+		"phone": phone,
+		"email": email,
+		"address": address
+	}
+	fetch(`https://playground.4geeks.com/contact/agendas/noahagenda/contacts/${contactid}`, {
+		method: "PUT",
+		body: JSON.stringify(contact),
+
+		headers: {
+			"Content-Type": "application/json"
+		}
+	})
+		.then(resp => {
+			console.log(resp.ok);
+			if (!resp.ok) {
+				throw new Error()
+			}
+			console.log(resp.status);
+
+			return resp.json();
+		})
+		.then(data => {
+			console.log(data);
+			setStore({contactList: [...getStore().contactList, contact]})
+			getActions().getAgendaContacts()
+		})
+		.catch(error => {
+			console.log(error);
+		});
+}
+
+
+updateContact: (contactid, name, phone, email, address)  => {
+	const contact = {
+		"contactid": contactid,
+		"name": name,
+		"phone": phone,
+		"email": email,
+		"address": address
+	}
+	fetch(`https://playground.4geeks.com/contact/agendas/noahagenda/contacts/${contactid}`, {
+		method: "PUT",
+		body: JSON.stringify(contact),
+
+		headers: {
+			"Content-Type": "application/json"
+		}
+	})
+		.then(resp => {
+			console.log(resp.ok);
+			if (!resp.ok) {
+				throw new Error()
+			}
+			console.log(resp.status);
+
+			return resp.json();
+		})
+		.then(updatedContact => {
+			const updatedContactList = getStore().contactList.map(item => {
+				if (item.id === contactid) {
+					return updatedContact;
+				}
+				else return item;
+			});
+			setStore({ contactList: updatedContactList});
+			
+		})
+		.catch(error => {
+			console.log(error);
+		});
+}
+
+
+
+import React, { useState, useEffect, useContext } from "react";
+import { Link, useParams } from "react-router-dom";
+import { Context } from "../store/appContext";
+
+import "../../styles/demo.css";
+
+export const Update = () => {
+	const {contactid} = useParams()
+	const [fullName, setFullName] = useState("")
+	const [address, setAddress] = useState("")
+	const [phone, setPhone] = useState("")
+	const [email, setEmail] = useState("")
+	const { store, actions } = useContext(Context);
+
+	let contact = store.contacts.find(element => {
+		return element.contactid
+	})
+
+	const handleUpdate = () => {
+		actions.updateContact(contactid, fullName, phone, email, address)
+	}
+
+	return (
+	<div>
+		<div className="d-flex justify-content-center">
+			<h1>Edit Contact</h1>
+		</div>
+
+		<label style = {{marginLeft: '127px'}}>Full Name</label>
+		<div className= "d-flex justify-content-center">
+			<input className="col-10 rounded" type="text" value= {fullName} placeholder="Full Name" 
+			onChange={(e) => setFullName(e.target.value)} />
+		</div>
+
+		<label style = {{marginLeft: '127px', marginTop: '30px'}}>Email</label>
+		<div className= "d-flex justify-content-center">
+			<input className="col-10 rounded" type="text" value={address} placeholder="Enter Email" 
+			onChange={(e) => setAddress(e.target.value)} />
+		</div>
+
+		<label style = {{marginLeft: '127px', marginTop: '30px'}}>Phone</label>
+		<div className= "d-flex justify-content-center">
+			<input className="col-10 rounded" type="text" value={phone} placeholder="Enter Phone Number" 
+			onChange={(e) => setPhone(e.target.value)} />
+		</div>
+
+		<label style = {{marginLeft: '127px', marginTop: '30px'}}>Address</label>
+		<div className= "d-flex justify-content-center">
+			<input className="col-10 rounded" type="text" value={email} placeholder="Enter Address" 
+			onChange={(e) => setEmail(e.target.value)} />
+		</div>
+
+		<Link to="/">
+			<button className="btn btn-success" onClick={handleUpdate} style={{marginLeft: '127px', marginTop: '20px'}}>Save Changes</button>
+		</Link>
+
+		<div className="container">
+			<br />
+			<Link to="/">
+				Get back to contacts
+			</Link>
+		</div>
+	</div>
+	);
+};
+
+export const Home = () => {
+	const { store, actions } = useContext(Context);
+	return (<div>
+	<Navbar />
+	<ul>
+		{store.contactList.map(contact => 
+		<Contact 
+		key={contact.id}
+        contactid={contact.id}
+		contactImage = {rigoImage} 
+		contactName = {contact.name} 
+		contactAddress= {contact.address}
+		contactPhone= {contact.phone}
+		contactEmail= {contact.email} />)}
+		
+		{/* <Contact contactImage = {rigoImage}/>
+		<Contact contactImage = {rigoImage}/>
+		<Contact contactImage = {rigoImage}/> */}
+	</ul>
+</div>); }
+
+import React, { useState, useEffect, useContext } from "react";
+import { Link, useParams } from "react-router-dom";
+import { Context } from "../store/appContext";
+
+import "../../styles/demo.css";
+
+export const Updat = () => {
+    const { contactid } = useParams();
+    const { store, actions } = useContext(Context);
+
+    const contact = store.contactList.find(contact => contact.id === parseInt(contactid));
+
+    const [contactInfo, setContactInfo] = useState({
+        fullName: contact ? contact.name : "",
+        address: contact ? contact.address : "",
+        phone: contact ? contact.phone : "",
+        email: contact ? contact.email : ""
+    });
+
+    const handleInputChange = event => {
+        const { name, value } = event.target;
+        setContactInfo({ ...contactInfo, [name]: value });
+    };
+
+    const handleUpdate = () => {
+        actions.updateContact(contactid, contactInfo.fullName, contactInfo.phone, contactInfo.email, contactInfo.address);
+    };
+
+    return (
+        <div>
+            <div className="d-flex justify-content-center">
+                <h1>Edit Contact</h1>
+            </div>
+            <label style={{ marginLeft: '127px' }}>Full Name</label>
+            <div className="d-flex justify-content-center">
+                <input
+                    className="col-10 rounded"
+                    type="text"
+                    name="fullName"
+                    value={contactInfo.fullName}
+                    placeholder="Full Name"
+                    onChange={handleInputChange}
+                />
+            </div>
+            <label style={{ marginLeft: '127px', marginTop: '30px' }}>Email</label>
+            <div className="d-flex justify-content-center">
+                <input
+                    className="col-10 rounded"
+                    type="text"
+                    name="email"
+                    value={contactInfo.email}
+                    placeholder="Enter Email"
+                    onChange={handleInputChange}
+                />
+            </div>
+            <label style={{ marginLeft: '127px', marginTop: '30px' }}>Phone</label>
+            <div className="d-flex justify-content-center">
+                <input
+                    className="col-10 rounded"
+                    type="text"
+                    name="phone"
+                    value={contactInfo.phone}
+                    placeholder="Enter Phone Number"
+                    onChange={handleInputChange}
+                />
+            </div>
+            <label style={{ marginLeft: '127px', marginTop: '30px' }}>Address</label>
+            <div className="d-flex justify-content-center">
+                <input
+                    className="col-10 rounded"
+                    type="text"
+                    name="address"
+                    value={contactInfo.address}
+                    placeholder="Enter Address"
+                    onChange={handleInputChange}
+                />
+            </div>
+            <Link to="/">
+                <button
+                    className="btn btn-success"
+                    onClick={handleUpdate}
+                    style={{ marginLeft: '127px', marginTop: '20px' }}
+                >
+                    Save Changes
+                </button>
+            </Link>
+            <div className="container">
+                <br />
+                <Link to="/">Get back to contacts</Link>
+            </div>
+        </div>
+    );
+};
+
+const findContactId = (id) => {
+	const contact = store.contacts.find((getContactId) => getContactId["id"] == id);
+	setFullName(contact.fullName)
+	setAddress(contact.address)
+	setPhone(contact.phone)
+	setEmail(contact.email)
+}
