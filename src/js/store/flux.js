@@ -128,7 +128,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 				.then(data => {
 					console.log(data)
 					getActions().getAgendaContacts
-					setStore({contactList: getStore().contactList.filter(() => contactid !== contactid)})
+					setStore({contactList: getStore().contactList.filter(contact => contact.id !== contactid)})
 				})
 				.catch(error => {
 					console.error(error);
