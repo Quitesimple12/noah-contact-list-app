@@ -1,19 +1,21 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import rigoImage from "../../img/rigo-baby.jpg";
 import "../../styles/home.css";
 import { Navbar } from "../component/navbar";
 import { Link } from "react-router-dom";
-import { Context } from "../store/appContext.js"
+import { Context } from "../store/appContext";
+import { Update } from "./update";
 
 const Contact = (props) => {
+	const {contactid} = props;
 	const { contactImage } = props;
 	const {contactName} = props;
 	const {contactAddress} = props;
 	const {contactEmail} = props;
 	const {contactPhone} = props;
-	const { deleteContact } = useContext(Context)
+	const { store, actions } = useContext(Context);
 	const [showModal, setShowModal] = useState(false);
-	const deleteContactModal = (event) => {
+	const openDeleteContact = (event) => {
 		setShowModal(true);
 		console.log(showModal);
 	};
@@ -22,8 +24,8 @@ const Contact = (props) => {
 		console.log(showModal);
 	}
 	const handleDelete = () => {
-		deleteContact();
 		closeDeleteContact();
+		actions.deleteContact(contactid)
 	}
 return (<div className="jumbotron jumbotron-fluid contact">
 		<div className="d-flex">
@@ -33,15 +35,16 @@ return (<div className="jumbotron jumbotron-fluid contact">
 				<p className="cardtext">{contactAddress}</p>
 				<p className="cardtext">{contactPhone}</p>
 				<p className="cardtext">{contactEmail}</p>
+				<p className="cardtext">{contactid}</p>
 			</div>
 			<div className="ms-auto">
 				<br />
 				<br />
 				<br />
-				<Link to="/demo" className="nav-link">
+				<Link to={`/update/${contactid}`} className="nav-link">
 					<button className="btn btn-success ms-auto btn-lg">Edit</button>
 				</Link>
-				<button onClick={deleteContactModal} className="btn btn-danger ms-auto btn-lg">Trash</button>
+				<button onClick={openDeleteContact} className="btn btn-danger ms-auto btn-lg">Trash</button>
 			</div>
 		</div>
 		{showModal && (
@@ -69,13 +72,23 @@ return (<div className="jumbotron jumbotron-fluid contact">
 	);
 };
 export const Home = () => {
+	const { store, actions } = useContext(Context);
 	return (<div>
 	<Navbar />
 	<ul>
-		<Contact contactImage = {rigoImage} contactName = "Mike Schmidt" contactAddress="1155 help" contactPhone="314444444" contactEmail="hell@hlp.cm" />
+		{store.contactList.map(contact => 
+		<Contact 
+		key={contact.id}
+        contactid={contact.id}
+		contactImage = {rigoImage} 
+		contactName = {contact.name} 
+		contactAddress= {contact.address}
+		contactPhone= {contact.phone}
+		contactEmail= {contact.email} />)}
+		
+		{/* <Contact contactImage = {rigoImage}/>
 		<Contact contactImage = {rigoImage}/>
-		<Contact contactImage = {rigoImage}/>
-		<Contact contactImage = {rigoImage}/>
+		<Contact contactImage = {rigoImage}/> */}
 	</ul>
 </div>); }
 
